@@ -21,17 +21,14 @@ project is different in three specific ways:
    them in a conversation days later, not just within one chat.
 3. **Runs without being asked.** `scheduler/jobs.py` uses APScheduler to
    run the agent on a timer (e.g. a daily morning briefing), and pushes
-   the result to you -- proactive, not purely reactive.
+   the result to you -- proactive, not purely reactive. Confirmed working
+   in practice: the agent has sent unprompted reminders based on open notes.
 
 ## Architecture
-
-```
 Telegram --> LangGraph agent --> [ MCP tool server | ChromaDB memory | APScheduler ]
-                  |
-                  v
-             Gemini API (free tier, reasoning engine)
-```
-
+|
+v
+Groq (openai/gpt-oss-120b, free tier, reasoning engine)
 - `bot/telegram_bot.py` -- receives/sends messages via Telegram
 - `agent/graph.py` -- the LangGraph state machine (the "brain")
 - `tools/tools.py` -- tool functions (web search, notes, memory)
@@ -44,13 +41,10 @@ Telegram --> LangGraph agent --> [ MCP tool server | ChromaDB memory | APSchedul
 ## Setup
 
 1. **Install dependencies**
-   ```
-   pip install -r requirements.txt
-   ```
-
-2. **Get a free Gemini API key**
-   Go to [aistudio.google.com](https://aistudio.google.com) -> "Get API
-   key". No credit card required.
+pip install -r requirements.txt
+2. **Get a free Groq API key**
+   Go to [console.groq.com](https://console.groq.com) -> API Keys ->
+   Create API Key. No credit card required.
 
 3. **Create a Telegram bot**
    Message [@BotFather](https://t.me/BotFather) on Telegram, send
@@ -61,24 +55,29 @@ Telegram --> LangGraph agent --> [ MCP tool server | ChromaDB memory | APSchedul
    your numeric id.
 
 5. **Configure secrets**
-   ```
-   cp .env.example .env
-   ```
-   Fill in `GOOGLE_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_USER_ID`.
-
-6. **Run it**
-   ```
-   python main.py
-   ```
-   Message your bot on Telegram. It should reply.
+python main.py
+Message your bot on Telegram. It should reply.
 
 ## Trying the MCP server standalone
 
 The tools are also runnable as a standalone MCP server, independent of
 the Telegram agent:
-```
-python tools/mcp_server.py
-```
+## Design decisions and things I learned building this
+
+- **Started on Gemini's free tier, migrated to Groq.** Gemini's free tier
+  caps at 20 requests/day per model on a fresh project -- fine for a demo,
+  not for active development. Groq's free tier is dramatically more
+  generous and noticeably faster, at zero cost.
+- **Switched from Llama 3.3 to `openai/gpt-oss-120b`.** Llama occasionally
+  emitted malformed tool-call syntax (writing out `<function=...>` as text
+  instead of a structured tool call), which Groq's API rejected with a 400.
+  OpenAI's open-weight models have more consistent structured tool-calling.
+  `agent/graph.py` also retries automatically on this specific failure mode.
+- **Telegram messages are capped at 4096 characters.** Long agent replies
+  (e.g. detailed search summaries) can exceed this and crash the send call
+  if unhandled. `bot/telegram_bot.py` chunks long replies instead.
+- **The system prompt injects the current date/time on every call**, since
+  the LLM has no built-in clock and would otherwise guess or refuse.
 
 ## Notes
 
