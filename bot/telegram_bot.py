@@ -19,6 +19,7 @@ from telegram.ext import (
 import config
 from agent.graph import run_agent
 from tools.tools import list_notes, remember_fact
+from tools.transcription import transcribe_audio
 
 _app: Application | None = None
 
@@ -46,7 +47,8 @@ def _update_history(chat_id: str, user_text: str, reply: str) -> None:
 
 WELCOME_MESSAGE = (
     "Hey! This is Nova. How can I help you today?\n\n"
-    "You can just talk to me normally, or use these shortcuts:\n"
+    "You can just talk to me normally (text or voice notes), or use "
+    "these shortcuts:\n"
     "/notes -- see your open notes\n"
     "/remember <something> -- save a fact to long-term memory\n"
     "/search <query> -- search the web"
@@ -142,12 +144,11 @@ async def _send_reply(update: Update, text: str) -> None:
             await update.message.reply_text(chunk)
 
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if str(update.effective_user.id) != config.TELEGRAM_USER_ID:
-        return  # ignore anyone who isn't the configured owner
-
+async def _process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, user_text: str) -> None:
+    """Shared pipeline: run the agent on some text and reply. Used by both
+    typed messages and transcribed voice messages, so voice notes get the
+    exact same tool-calling/memory/formatting behavior as typing."""
     chat_id = str(update.effective_chat.id)
-    user_text = update.message.text
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
 
     try:
@@ -157,6 +158,35 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         reply = _friendly_error(e)
 
     await _send_reply(update, reply)
+
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if str(update.effective_user.id) != config.TELEGRAM_USER_ID:
+        return  # ignore anyone who isn't the configured owner
+    await _process_and_reply(update, context, update.message.text)
+
+
+async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Transcribes an incoming voice note via Groq's Whisper endpoint, then
+    runs it through the same pipeline as a typed message."""
+    if str(update.effective_user.id) != config.TELEGRAM_USER_ID:
+        return
+
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
+
+    try:
+        voice_file = await update.message.voice.get_file()
+        audio_bytes = await voice_file.download_as_bytearray()
+        transcript = transcribe_audio(bytes(audio_bytes))
+    except Exception as e:
+        await update.message.reply_text(f"Couldn't transcribe that voice note: {e}")
+        return
+
+    if not transcript.strip():
+        await update.message.reply_text("I couldn't make out any speech in that voice note.")
+        return
+
+    await _process_and_reply(update, context, transcript)
 
 
 async def send_proactive_message(text: str) -> None:
@@ -175,4 +205,5 @@ def build_bot() -> Application:
     _app.add_handler(CommandHandler("remember", remember_command))
     _app.add_handler(CommandHandler("search", search_command))
     _app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    _app.add_handler(MessageHandler(filters.VOICE, handle_voice))
     return _app

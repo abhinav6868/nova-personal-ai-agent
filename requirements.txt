@@ -9,3 +9,4 @@ pydantic==2.10.4
 duckduckgo-search==7.1.1
 mcp==1.1.2
 pytest==8.3.4
+groq==0.37.1
