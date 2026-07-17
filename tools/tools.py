@@ -17,9 +17,10 @@ from datetime import datetime
 from duckduckgo_search import DDGS
 from langchain_core.tools import tool
 
+import config
 from memory.store import recall, remember
 
-NOTES_FILE = os.path.join(os.path.dirname(__file__), "notes.json")
+NOTES_FILE = config.NOTES_FILE
 
 
 def _load_notes() -> list[dict]:

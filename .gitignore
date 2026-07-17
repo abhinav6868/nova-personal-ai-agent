@@ -1,8 +1,7 @@
 .env
 __pycache__/
 *.pyc
-chroma_store/
-tools/notes.json
+data/
 .venv/
 venv/
 .DS_Store

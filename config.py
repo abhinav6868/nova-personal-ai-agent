@@ -20,8 +20,16 @@ TELEGRAM_USER_ID = os.getenv("TELEGRAM_USER_ID", "")
 # rejects with a 400 (tool_use_failed).
 LLM_MODEL = "openai/gpt-oss-120b"
 
-# Where ChromaDB persists its data on disk (so memory survives restarts)
-CHROMA_PERSIST_DIR = os.path.join(os.path.dirname(__file__), "chroma_store")
+# Everything that needs to persist across restarts (long-term memory,
+# notes) lives under one directory, so a deployment only needs to mount
+# ONE volume at this path to keep data across redeploys. Defaults to a
+# local folder for development; set DATA_DIR to a mounted volume path
+# (e.g. /data) in production.
+DATA_DIR = os.getenv("DATA_DIR", os.path.join(os.path.dirname(__file__), "data"))
+os.makedirs(DATA_DIR, exist_ok=True)
+
+CHROMA_PERSIST_DIR = os.path.join(DATA_DIR, "chroma_store")
+NOTES_FILE = os.path.join(DATA_DIR, "notes.json")
 
 REQUIRED_VARS = {
     "GROQ_API_KEY": GROQ_API_KEY,

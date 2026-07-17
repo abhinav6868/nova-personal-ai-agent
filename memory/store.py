@@ -15,10 +15,14 @@ import time
 import uuid
 
 import chromadb
+from chromadb.config import Settings
 
 import config
 
-_client = chromadb.PersistentClient(path=config.CHROMA_PERSIST_DIR)
+_client = chromadb.PersistentClient(
+    path=config.CHROMA_PERSIST_DIR,
+    settings=Settings(anonymized_telemetry=False),
+)
 _collection = _client.get_or_create_collection(name="agent_memory")
 
 
