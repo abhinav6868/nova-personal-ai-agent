@@ -1,4 +1,5 @@
 import Sidebar from "@/components/sidebar/sidebar";
+import Topbar from "@/components/topbar/topbar";
 
 export default function AppShell({
   children,
@@ -7,15 +8,15 @@ export default function AppShell({
 }) {
   return (
     <main className="flex h-screen bg-background">
-
       <Sidebar />
 
-      <section className="flex-1 overflow-auto">
+      <div className="flex flex-1 flex-col">
+        <Topbar />
 
-        {children}
-
-      </section>
-
+        <section className="flex-1 overflow-auto">
+          {children}
+        </section>
+      </div>
     </main>
   );
 }
