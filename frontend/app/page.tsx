@@ -1,4 +1,5 @@
 import AppShell from "@/components/layout/app-shell";
+import QuickActions from "@/components/dashboard/quick-actions";
 
 export default function HomePage() {
   return (
@@ -11,6 +12,8 @@ export default function HomePage() {
         <p className="mt-2 text-zinc-400">
           Nova is ready to help you today.
         </p>
+
+        <QuickActions />
       </div>
     </AppShell>
   );
