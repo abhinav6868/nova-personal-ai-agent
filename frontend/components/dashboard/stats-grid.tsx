@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Brain,
   Clock3,
@@ -6,8 +9,19 @@ import {
 } from "lucide-react";
 
 import StatsCard from "./stats-card";
+import { getHealth } from "@/services/health";
 
 export default function StatsGrid() {
+  const [healthy, setHealthy] = useState(false);
+
+  useEffect(() => {
+    getHealth()
+      .then((res) => {
+        setHealthy(res.status === "healthy");
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <section className="mt-10">
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -34,8 +48,8 @@ export default function StatsGrid() {
 
         <StatsCard
           title="Agent Health"
-          value="100%"
-          subtitle="All systems operational"
+          value={healthy ? "Online" : "Offline"}
+          subtitle={healthy ? "Connected to API" : "API unavailable"}
           icon={CheckCircle2}
         />
       </div>
