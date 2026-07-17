@@ -40,8 +40,17 @@ def _build_system_prompt() -> SystemMessage:
         f"references something you might already know about them. Use "
         f"remember_fact when they share a lasting preference or detail. "
         f"When you use a tool, call it directly through the tool-calling "
-        f"mechanism -- never write out a function call as plain text. Be "
-        f"concise -- you're replying inside a chat app, not writing an essay."
+        f"mechanism -- never write out a function call as plain text. "
+        f"Keep replies short: 2-4 sentences unless the user clearly wants "
+        f"detail. CRITICAL: after calling web_search, you will get back a "
+        f"raw list of titles and snippets -- you must NEVER copy, paste, or "
+        f"lightly edit that list as your answer. Read the results, extract "
+        f"the actual information, and write a completely new 2-4 sentence "
+        f"answer in flowing prose, as if you already knew the answer and "
+        f"were just telling a friend. No bullet points, no dashes, no "
+        f"'Source: ...' lines, no titles copied from results. You can use "
+        f"light Telegram-style formatting (*bold* for key terms) and at most "
+        f"one emoji when it genuinely fits -- don't force it into every reply."
     ))
 
 llm = ChatGroq(

@@ -3,13 +3,14 @@ Entry point. Run with: python main.py
 
 Starts the Telegram bot and the background scheduler in the same event
 loop, and wires the scheduler's proactive messages to go out through
-the bot.
+the bot. Also sends a one-time greeting on startup, so the bot
+announces itself every time the process starts or restarts.
 """
 import asyncio
 import logging
 
 import config
-from bot.telegram_bot import build_bot, send_proactive_message
+from bot.telegram_bot import build_bot, send_proactive_message, STARTUP_MESSAGE
 from scheduler.jobs import register_sender, start_scheduler
 
 logging.basicConfig(
@@ -31,6 +32,7 @@ async def run() -> None:
     async with app:
         await app.start()
         await app.updater.start_polling()
+        await send_proactive_message(STARTUP_MESSAGE)
         await asyncio.Event().wait()  # run forever until interrupted
 
 
