@@ -1,5 +1,7 @@
 import AppShell from "@/components/layout/app-shell";
 import QuickActions from "@/components/dashboard/quick-actions";
+import StatsGrid from "@/components/dashboard/stats-grid";
+import RecentActivity from "@/components/dashboard/recent-activity";
 
 export default function HomePage() {
   return (
@@ -14,6 +16,10 @@ export default function HomePage() {
         </p>
 
         <QuickActions />
+
+        <StatsGrid />
+
+        <RecentActivity />
       </div>
     </AppShell>
   );
