@@ -7,12 +7,10 @@ export interface Message {
 
 interface MessageListProps {
   messages: Message[];
-  loading: boolean;
 }
 
 export default function MessageList({
   messages,
-  loading,
 }: MessageListProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -23,13 +21,6 @@ export default function MessageList({
           content={message.content}
         />
       ))}
-
-      {loading && (
-        <MessageBubble
-          role="assistant"
-          content="Nova is thinking..."
-        />
-      )}
     </div>
   );
 }
