@@ -2,16 +2,16 @@ import {
   Home,
   MessageSquare,
   Brain,
-  FileText,
+  Globe,
+  LayoutDashboard,
   Calendar,
-  BarChart3,
   Settings,
 } from "lucide-react";
 
 export const navigation = [
   {
     title: "Home",
-    href: "/",
+    href: "/home",
     icon: Home,
   },
   {
@@ -25,19 +25,19 @@ export const navigation = [
     icon: Brain,
   },
   {
-    title: "Documents",
-    href: "/documents",
-    icon: FileText,
+    title: "Research",
+    href: "/research",
+    icon: Globe,
   },
   {
-    title: "Calendar",
-    href: "/calendar",
+    title: "Workspace",
+    href: "/workspace",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Planner",
+    href: "/planner",
     icon: Calendar,
-  },
-  {
-    title: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
   },
   {
     title: "Settings",
